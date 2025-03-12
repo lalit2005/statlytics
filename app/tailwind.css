@@ -9,3 +9,7 @@
     color-scheme: dark;
   }
 }
+
+input {
+  @apply px-2 py-1 rounded block w-full focus:outline-none focus:ring-0 focus:outline-zinc-800;
+}
