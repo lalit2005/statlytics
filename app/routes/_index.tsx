@@ -12,12 +12,12 @@ export default function Index() {
     <div>
       <div className="max-w-3xl w-full mx-auto px-4 mt-20">
         <h1 className="text-xl font-medium">Statlytics</h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-zinc-400 mt-2">
           A simple analytics platform to analyze traffic and user behaviour in
           websites and apps. Metrics like pageviews, browser usage, users
           location etc. can be tracked.
         </p>
-        <p className="text-gray-400 mt-2">
+        <p className="text-zinc-400 mt-2">
           Statlytics is completely open source. Teams can self host Statlytics
           in their servers thereby preserving the privacy of users.
         </p>

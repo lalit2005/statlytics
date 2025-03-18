@@ -11,5 +11,13 @@
 }
 
 input {
-  @apply px-2 py-1 rounded block w-full focus:outline-none focus:ring-0 focus:outline-zinc-800;
+  @apply px-2 py-1 rounded block w-full border border-zinc-800 focus:outline-none focus:ring-0 focus:outline-zinc-800;
 }
+
+h3 {
+  @apply text-lg;
+}
+
+/* * {
+  border: 1px red solid;
+} */
