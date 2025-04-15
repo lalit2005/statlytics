@@ -6,6 +6,7 @@ import { genSaltSync, hashSync, compareSync } from "bcrypt-edge";
 import type { Context, Next } from "hono";
 import { getCookie } from "hono/cookie";
 import { nanoid } from "nanoid";
+import { getConnInfo } from "hono/cloudflare-workers";
 
 const app = new Hono<{
   Variables: {
@@ -235,12 +236,14 @@ app.get("/api/v1/sites", authMiddleware, async (c) => {
 
 app.get("/api/v1/analytics-data", authMiddleware, async (c) => {
   const sql = c.get("sql");
-  const { website_id } = await c.req.json();
+  const website_id = c.req.query("website_id") as string;
   const pageviews =
     await sql`SELECT * FROM pageviews WHERE website_id = ${website_id}`;
   const visitors =
     await sql`SELECT * FROM visitors WHERE website_id = ${website_id}`;
-  return c.json({ pageviews, visitors });
+  const website = await sql`
+    SELECT * FROM websites WHERE website_id = ${website_id} limit 1`;
+  return c.json({ pageviews, visitors, website });
 });
 
 // --------------------
@@ -248,17 +251,8 @@ app.get("/api/v1/analytics-data", authMiddleware, async (c) => {
 // --------------------
 
 app.post("/api/v1/collect-data", async (c) => {
-  const {
-    url,
-    visitor_id,
-    path,
-    browser,
-    operating_system,
-    device,
-    location,
-    referrer,
-    ip_hash,
-  } = await c.req.json();
+  const { url, path, browser, operating_system, device, location, referrer } =
+    await c.req.json();
   const sql = c.get("sql");
   const websites = await sql`SELECT * FROM websites WHERE url = ${url}`;
   const website = websites[0];
@@ -266,14 +260,19 @@ app.post("/api/v1/collect-data", async (c) => {
     return c.json({ error: "Website not found" }, 404);
   }
 
+  const info = getConnInfo(c) || c.header("cf-connecting-ip");
+  const ip = info.remote.address?.toString();
+  console.log({ ip });
+  const ipHash = hashSync(ip, 10);
+
   const result = await sql`
     WITH visitor_upsert AS (
-      INSERT INTO visitors (visitor_id, website_id, browser, operating_system, device, location, ip_hash)
-      VALUES (${visitor_id}, ${website.website_id}, ${browser}, ${operating_system}, ${device}, ${location}, ${ip_hash})
+      INSERT INTO visitors (visitor_id, website_id, browser, operating_system, device, location)
+      VALUES (${ipHash}, ${website.website_id}, ${browser}, ${operating_system}, ${device}, ${location})
       ON CONFLICT (visitor_id) DO NOTHING
     )
     INSERT INTO pageviews (website_id, visitor_id, path, referrer)
-    VALUES (${website.website_id}, ${visitor_id}, ${path}, ${referrer})
+    VALUES (${website.website_id}, ${ipHash}, ${path}, ${referrer})
     RETURNING *
   `;
 
@@ -285,13 +284,13 @@ app.post("/api/v1/collect-data", async (c) => {
 
 export default app;
 
-// tables
+app.get("/api/v1/get-hash", async (c) => {
+  const pass = c.req.query("pass");
+  const salt = genSaltSync(10);
+  const passwordHash = hashSync(pass, salt);
+  return c.text(passwordHash);
+});
 
-// CREATE TABLE users (
-//     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//     email TEXT UNIQUE NOT NULL,
-//     password_hash TEXT NOT NULL,
-//     jwt TEXT,  -- Stores active JWT token (optional)
 //     role TEXT CHECK (role IN ('admin', 'developer', 'viewer')) NOT NULL,
 //     created_at TIMESTAMP DEFAULT NOW()
 // );
@@ -309,7 +308,6 @@ export default app;
 // CREATE TABLE visitors (
 //     visitor_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 //     website_id UUID REFERENCES websites(website_id) ON DELETE CASCADE,
-//     ip_hash TEXT NOT NULL,  -- Store a hash of the IP for privacy
 //     browser TEXT NOT NULL,
 //     operating_system TEXT NOT NULL,
 //     device TEXT NOT NULL,

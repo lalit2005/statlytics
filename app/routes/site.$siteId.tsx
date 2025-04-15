@@ -1,33 +1,170 @@
+import { useParams } from "@remix-run/react";
 import { AreaChart } from "~/components/AreaChart";
 import { BarList } from "~/components/BarList";
 import ProtectedRoute from "~/components/ProtectedRoute";
+import fetcher from "~/lib/fetcher";
+import useSwr from "swr";
 
 const SitePage = () => {
+  const { siteId } = useParams();
+
+  const { data, error } = useSwr(
+    `/api/v1/analytics-data?website_id=${siteId}`,
+    fetcher
+  );
+
+  const isLoading = !data && !error;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl font-medium animate-pulse">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isLoading && !data) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl font-medium">
+          Waiting for people to visit the site!
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-2xl font-medium">Error: {error.message}</p>
+      </div>
+    );
+  }
+
+  // Aggregate pageviews by date for the chart
+  const chartDataObj = data.pageviews.reduce((acc, pv) => {
+    const date = new Date(pv.timestamp).toISOString().slice(0, 10); // YYYY-MM-DD format
+    acc[date] = (acc[date] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const chartData = Object.entries(chartDataObj)
+    .map(([date, count]) => ({ date, pageviews: count }))
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Aggregate page visits by path
+  const pageVisitObj = data.pageviews.reduce((acc, pv) => {
+    acc[pv.path] = (acc[pv.path] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const pageVisits = Object.entries(pageVisitObj).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  // Aggregate browser usage from visitors
+  const browserObj = data.visitors.reduce((acc, visitor) => {
+    acc[visitor.browser] = (acc[visitor.browser] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const browserUsage = Object.entries(browserObj).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  const operatingSystemObj = data.visitors.reduce((acc, visitor) => {
+    acc[visitor.operating_system] = (acc[visitor.operating_system] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const operatingSystemUsage = Object.entries(operatingSystemObj).map(
+    ([name, value]) => ({
+      name,
+      value,
+    })
+  );
+  const deviceObj = data.visitors.reduce((acc, visitor) => {
+    acc[visitor.device] = (acc[visitor.device] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const deviceUsage = Object.entries(deviceObj).map(([name, value]) => ({
+    name,
+    value,
+  }));
+  const locationObj = data.visitors.reduce((acc, visitor) => {
+    acc[visitor.location] = (acc[visitor.location] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const locationUsage = Object.entries(locationObj).map(([name, value]) => ({
+    name,
+    value,
+  }));
+  const referrerObj = data.pageviews.reduce((acc, pv) => {
+    let domain = "unknown";
+    if (pv.referrer) {
+      try {
+        domain = new URL(pv.referrer).hostname.replace(/^www\./, "");
+      } catch (err) {
+        domain = "unknown";
+      }
+    }
+    acc[domain] = (acc[domain] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const referrerUsage = Object.entries(referrerObj).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
   return (
     <ProtectedRoute>
       <div className="max-w-6xl mx-auto w-full">
-        <div className="mt-20 space-y-16">
-          <h1 className="text-xl font-medium">Product Documentation</h1>
+        <div className="mt-20">
+          <h1 className="text-xl font-medium">
+            {data && data?.website[0]?.name}
+          </h1>
+          <p className="text-lg text-gray-600 -mt-16">
+            {data && data?.website[0]?.url}
+          </p>
         </div>
-        <section className="mt-16"></section>
-        <section>
-          <h3 className="mb-5">Page views</h3>
+        <section className="mt-16">
+          {/* <pre>
+            <code>{JSON.stringify(data, null, 2)}</code>
+          </pre> */}
+        </section>
+        <section className="mt-16">
+          <h3 className="mb-5">Page Views</h3>
           <AreaChart
             className="h-52"
-            data={chartdata}
+            data={chartData}
             index="date"
-            categories={["Views"]}
+            categories={["pageviews"]}
             showLegend={false}
           />
         </section>
         <div className="grid grid-cols-2 gap-10 mt-16">
           <section>
-            <h3 className="mb-5">Page visits</h3>
-            <BarList data={data} />
+            <h3 className="mb-5">Page Visits</h3>
+            <BarList data={pageVisits} />
           </section>
           <section>
-            <h3 className="mb-5">Browser usage</h3>
-            <BarList data={data} />
+            <h3 className="mb-5">Browser Usage</h3>
+            <BarList data={browserUsage} />
+          </section>
+          <section>
+            <h3 className="mb-5">Operating System Usage</h3>
+            <BarList data={operatingSystemUsage} />
+          </section>
+          <section>
+            <h3 className="mb-5">Device Usage</h3>
+            <BarList data={deviceUsage} />
+          </section>
+          <section>
+            <h3 className="mb-5">Location Usage</h3>
+            <BarList data={locationUsage} />
+          </section>
+          <section>
+            <h3 className="mb-5">Referrer Usage</h3>
+            <BarList data={referrerUsage} />
           </section>
         </div>
       </div>
@@ -36,74 +173,3 @@ const SitePage = () => {
 };
 
 export default SitePage;
-
-const data = [
-  { name: "/home", value: 843 },
-  { name: "/imprint", value: 46 },
-  { name: "/cancellation", value: 3 },
-  { name: "/blocks", value: 108 },
-  { name: "/documentation", value: 384 },
-];
-
-const chartdata = [
-  {
-    date: "Jan 23",
-    Views: 2890,
-    Inverters: 2338,
-  },
-  {
-    date: "Feb 23",
-    Views: 2756,
-    Inverters: 2103,
-  },
-  {
-    date: "Mar 23",
-    Views: 3322,
-    Inverters: 2194,
-  },
-  {
-    date: "Apr 23",
-    Views: 3470,
-    Inverters: 2108,
-  },
-  {
-    date: "May 23",
-    Views: 3475,
-    Inverters: 1812,
-  },
-  {
-    date: "Jun 23",
-    Views: 3129,
-    Inverters: 1726,
-  },
-  {
-    date: "Jul 23",
-    Views: 3490,
-    Inverters: 1982,
-  },
-  {
-    date: "Aug 23",
-    Views: 2903,
-    Inverters: 2012,
-  },
-  {
-    date: "Sep 23",
-    Views: 2643,
-    Inverters: 2342,
-  },
-  {
-    date: "Oct 23",
-    Views: 2837,
-    Inverters: 2473,
-  },
-  {
-    date: "Nov 23",
-    Views: 2954,
-    Inverters: 3848,
-  },
-  {
-    date: "Dec 23",
-    Views: 3239,
-    Inverters: 3736,
-  },
-];
