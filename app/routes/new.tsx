@@ -16,7 +16,7 @@ export default function NewWebsiteRoute() {
     setIsLoading(true);
 
     try {
-      const { data } = await api.post("/api/v1/add-new-site", {
+      const { data } = await api.post("/add-new-site", {
         name: websiteName,
         url: domainName,
       });

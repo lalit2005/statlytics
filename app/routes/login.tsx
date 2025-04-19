@@ -32,7 +32,7 @@ const LoginPage = () => {
         onSubmit={(e) => {
           e.preventDefault();
           api
-            .post("/api/v1/login", { email, password })
+            .post("/login", { email, password })
             .then((res) => {
               alert(JSON.stringify(res.data, null, 2));
               navigate("/dashboard");

@@ -4,7 +4,7 @@ import api from "~/lib/axios";
 const Logout = () => {
   const navigate = useNavigate();
   api
-    .post("/api/v1/logout")
+    .post("/logout")
     .then(() => {
       navigate("/login");
     })
