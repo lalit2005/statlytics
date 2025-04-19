@@ -58,7 +58,7 @@ export default function TeamsRoute() {
   const addUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const { data } = await api.post("/api/v1/add-new-user", {
+      const { data } = await api.post("/add-new-user", {
         email: newUserEmail,
         password: newUserPassword,
         role: newUserRole,

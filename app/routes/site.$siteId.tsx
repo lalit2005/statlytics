@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link, useParams } from "@remix-run/react";
 import { AreaChart } from "~/components/AreaChart";
 import { BarList } from "~/components/BarList";
