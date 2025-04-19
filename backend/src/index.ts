@@ -109,7 +109,10 @@ app.post("/api/v1/login", async (c) => {
   );
 
   // Set HttpOnly Secure Cookie
-  c.header("Set-Cookie", `token=${token}; HttpOnly; SameSite=Strict; Path=/`);
+  c.header(
+    "Set-Cookie",
+    `token=${token}; HttpOnly; Secure; SameSite=Strict; Path=/`
+  );
 
   return c.json({ message: "Logged in" });
 });
@@ -117,7 +120,7 @@ app.post("/api/v1/login", async (c) => {
 app.post("/api/v1/logout", async (c) => {
   c.header(
     "Set-Cookie",
-    `token=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0`
+    `token=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`
   );
   return c.json({ message: "Logged out" });
 });
@@ -195,7 +198,7 @@ app.put(
       );
       c.header(
         "Set-Cookie",
-        `token=${newToken}; HttpOnly; SameSite=Strict; Path=/`
+        `token=${newToken}; HttpOnly; Secure; SameSite=Strict; Path=/`
       );
     }
 
