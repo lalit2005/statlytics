@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import { format } from "date-fns";
 import { Link, useNavigate } from "@remix-run/react";
+import { Button } from "~/components/Button";
 
 const DashboardPage = () => {
   const { data, error } = useSwr("/api/v1/sites", fetcher);
@@ -25,18 +26,24 @@ const DashboardPage = () => {
     <ProtectedRoute>
       <div className="max-w-[90%] mx-auto w-full px-4 py-10">
         <p className="text-2xl font-medium">Dashboard</p>
-        <div className="mt-10 flex w-full items-center">
-          <Input
-            placeholder="Search..."
-            className="inline-block"
-            onChange={(e) => {
-              setQuery(e.target.value);
-            }}
-          />
-          <Link to={"/new"} className="inline-block w-full">
-            <button className="bg-blue-500 text-white px-2 py-1 rounded-md ml-4">
-              Add new site
-            </button>
+        <div className="mt-10 grid grid-cols-7 grid-flow-row gap-4">
+          <div className="col-span-5">
+            <Input
+              placeholder="Search..."
+              onChange={(e) => {
+                setQuery(e.target.value);
+              }}
+            />
+          </div>
+          <Link to={"/new"} className="col-span-1">
+            <Button variant="light" className="col-span-1 w-full">
+              <span className="ml-2">New site</span>
+            </Button>
+          </Link>
+          <Link to={"/teams"} className="col-span-1">
+            <Button variant="light" className="w-full">
+              <span className="ml-2">Manage Team</span>
+            </Button>
           </Link>
         </div>
         <div>

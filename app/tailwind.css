@@ -18,6 +18,10 @@ h3 {
   @apply text-lg;
 }
 
+li > a {
+  @apply rounded-md hover:bg-zinc-800 w-full text-left px-2 py-1 block;
+}
+
 /* * {
   border: 1px red solid;
 } */

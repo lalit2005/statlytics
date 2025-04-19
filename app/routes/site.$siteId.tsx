@@ -1,9 +1,10 @@
-import { useParams } from "@remix-run/react";
+import { Link, useParams } from "@remix-run/react";
 import { AreaChart } from "~/components/AreaChart";
 import { BarList } from "~/components/BarList";
 import ProtectedRoute from "~/components/ProtectedRoute";
 import fetcher from "~/lib/fetcher";
 import useSwr from "swr";
+import { RiAlignLeft, RiArrowLeftWideFill } from "@remixicon/react";
 
 const SitePage = () => {
   const { siteId } = useParams();
@@ -119,17 +120,24 @@ const SitePage = () => {
     <ProtectedRoute>
       <div className="max-w-6xl mx-auto w-full">
         <div className="mt-20">
-          <h1 className="text-xl font-medium">
-            {data && data?.website[0]?.name}
-          </h1>
-          <p className="text-lg text-gray-600 -mt-16">
+          <div className="text-sm text-zinc-600 hover:text-zinc-400 mb-5">
+            <Link to={"/dashboard"} className="block -ml-2">
+              <RiArrowLeftWideFill className="scale-75 inline-block -mt-0.5 mr-0.5" />
+              Go back
+            </Link>
+          </div>
+          <h1 className="text-lg text-zinc-500">
             {data && data?.website[0]?.url}
+          </h1>
+          <p className="text-xl font-medium">
+            {data && data?.website[0]?.name}
           </p>
         </div>
         <section className="mt-16">
           {/* <pre>
             <code>{JSON.stringify(data, null, 2)}</code>
-          </pre> */}
+          </pre>
+         */}
         </section>
         <section className="mt-16">
           <h3 className="mb-5">Page Views</h3>

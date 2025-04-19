@@ -184,6 +184,21 @@ app.put(
     if (!result) {
       return c.json({ error: "Failed to update user" }, 500);
     }
+
+    // Regenerate token if the current user updated their own role
+    const currentUser = c.get("user");
+    if (currentUser.email === email) {
+      const newToken = await sign(
+        { email, role, user_id: currentUser.user_id },
+        c.get("JWT_SECRET"),
+        "HS256"
+      );
+      c.header(
+        "Set-Cookie",
+        `token=${newToken}; HttpOnly; SameSite=Strict; Path=/`
+      );
+    }
+
     return c.json({ message: "User updated" });
   }
 );
