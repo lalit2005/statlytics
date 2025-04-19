@@ -11,7 +11,7 @@ const SitePage = () => {
   const { siteId } = useParams();
 
   const { data, error } = useSwr(
-    `/api/v1/analytics-data?website_id=${siteId}`,
+    `/analytics-data?website_id=${siteId}`,
     fetcher
   );
 

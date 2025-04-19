@@ -17,7 +17,7 @@ import { Link, useNavigate } from "@remix-run/react";
 import { Button } from "~/components/Button";
 
 const DashboardPage = () => {
-  const { data, error } = useSwr("/api/v1/sites", fetcher);
+  const { data, error } = useSwr("/sites", fetcher);
   console.log(data);
   const isLoading = !data && !error;
   const [query, setQuery] = useState<string>("");

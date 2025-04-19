@@ -14,7 +14,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const user = await api.get("/api/v1/me");
+      const user = await api.get("/me");
       if (user) {
         setIsLoggedIn(true);
         navigate("/dashboard");

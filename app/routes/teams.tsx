@@ -32,7 +32,7 @@ export default function TeamsRoute() {
   // Fetch current user info
   const fetchCurrentUser = async () => {
     try {
-      const { data } = await api.get("/api/v1/me");
+      const { data } = await api.get("/me");
       setCurrentUser(data.user);
     } catch (err: any) {
       setError(err.response?.data.error || "Failed to fetch current user.");
@@ -42,7 +42,7 @@ export default function TeamsRoute() {
   // Fetch all users
   const fetchUsers = async () => {
     try {
-      const { data } = await api.get("/api/v1/users");
+      const { data } = await api.get("/users");
       setUsers(data);
     } catch (err: any) {
       setError(err.response?.data.error || "Failed to fetch users.");
@@ -76,7 +76,7 @@ export default function TeamsRoute() {
   // Update a user's role
   const updateRole = async (email: string, role: string) => {
     try {
-      const { data } = await api.put("/api/v1/update-user", { email, role });
+      const { data } = await api.put("/update-user", { email, role });
       setSuccess(data.message);
       fetchUsers();
     } catch (err: any) {
@@ -87,7 +87,7 @@ export default function TeamsRoute() {
   // Delete a user
   const deleteUser = async (email: string) => {
     try {
-      const { data } = await api.delete("/api/v1/delete-user", {
+      const { data } = await api.delete("/delete-user", {
         data: { email },
       });
       setSuccess(data.message);

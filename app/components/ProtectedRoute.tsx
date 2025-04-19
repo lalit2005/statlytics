@@ -13,7 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   React.useEffect(() => {
     api
-      .get("/api/v1/me")
+      .get("/me")
       .then((res) => {
         setUser(res.data);
       })
