@@ -35,6 +35,7 @@ const LoginPage = () => {
             .post("/login", { email, password })
             .then((res) => {
               alert(JSON.stringify(res.data, null, 2));
+              localStorage.setItem("token", res.data.token);
               navigate("/dashboard");
             })
             .catch((err) => {

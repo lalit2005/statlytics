@@ -7,6 +7,10 @@ const api = axios.create({
       : "https://backend.lalit2005.workers.dev/api/v1",
   headers: {
     "Content-Type": "application/json",
+    token:
+      typeof localStorage !== "undefined"
+        ? localStorage.getItem("token")
+        : "no-token",
   },
   withCredentials: true,
 });

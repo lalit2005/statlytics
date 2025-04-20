@@ -3,9 +3,14 @@ import api from "~/lib/axios";
 
 const Logout = () => {
   const navigate = useNavigate();
+
   api
     .post("/logout")
     .then(() => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        localStorage.removeItem("token");
+      }
       navigate("/login");
     })
     .catch((err) => {
