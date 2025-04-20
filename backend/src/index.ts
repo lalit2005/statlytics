@@ -43,7 +43,7 @@ interface User {
 }
 
 const authMiddleware = async (c: Context, next: Next) => {
-  const token = getCookie(c, "token");
+  const token = (getCookie(c, "token") || c.req.header("token")) as string;
   console.log({ token });
   if (!token) return c.json({ error: "Unauthorized" }, 401);
 
@@ -114,7 +114,7 @@ app.post("/api/v1/login", async (c) => {
     `token=${token}; HttpOnly; Secure; SameSite=None; Path=/`
   );
 
-  return c.json({ message: "Logged in" });
+  return c.json({ message: "Logged in", token: token });
 });
 
 app.post("/api/v1/logout", async (c) => {
